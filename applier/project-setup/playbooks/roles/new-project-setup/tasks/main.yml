@@ -1,0 +1,51 @@
+---
+# tasks file for roles/setup
+- name: Display all variables/facts known for a host
+  debug:
+    msg: "Setting up Openshift project {{ project_name }}"
+
+- name: Create Project yaml from template
+  template:
+    src: projects.yaml.j2
+    dest: "{{ inventory_dir }}/../../openshift/projects/projects.yml"
+
+- name: Create build params from template
+  template:
+    src: build.j2
+    dest: "{{ inventory_dir }}/../../openshift/params/build-dev"
+
+- name: Create script for setting up secrets
+  template:
+    src: oc-setup-secrets.sh.j2
+    dest: "{{ inventory_dir }}/../../openshift/bin/oc-setup-secrets.sh"
+    force: yes 
+
+- name: Create utility Set Env script 
+  template:
+    src: set-project-env.sh.j2
+    dest: "{{ inventory_dir }}/../../openshift/bin/set-project-env.sh"
+
+- set_fact:
+    lifecycle_env: dev
+    lifecycle_env_suffix: d
+- name: Create deployment dev params from template
+  template:
+    src: deployment.j2
+    dest: "{{ inventory_dir }}/../../openshift/params/deployment-{{lifecycle_env}}"
+
+- set_fact:
+    lifecycle_env: int
+    lifecycle_env_suffix: i
+- name: Create deployment int params from template
+  template:
+    src: deployment.j2
+    dest: "{{ inventory_dir }}/../../openshift/params/deployment-{{lifecycle_env}}"
+
+- set_fact:
+    lifecycle_env: qa
+    lifecycle_env_suffix: q
+- name: Create deployment qa params from template
+  template:
+    src: deployment.j2
+    dest: "{{ inventory_dir }}/../../openshift/params/deployment-{{lifecycle_env}}"
+

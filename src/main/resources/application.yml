@@ -1,0 +1,55 @@
+spring:
+  application:
+    name: ${APPLICATION_NAME:camel-sample-app}
+    
+logging:
+  config: classpath:logback.xml
+
+# lets listen on all ports to ensure we can be invoked from the pod IP
+server:
+  address: 0.0.0.0
+
+management:
+  address: 0.0.0.0
+  security:
+    enabled: false
+
+endpoints:
+  enabled: true
+  health:
+    enabled: true
+
+security:
+  basic:
+    enabled: false
+
+# - Actuator Info
+info:
+  app:
+    name: Sample SDGESI App
+    description: Template Spring Boot App customized for OpenShift
+    version:  1.0.0
+    runtime-config-type: desktop
+    APPLICATION_NAME: ${APPLICATION_NAME:camel-sample-app}
+    
+# - Active MQ
+amq:
+  brokerurl: failover:(tcp://apldatintd001:61616)
+  username: amq
+  password: amq
+  redeliveryDelay: 1000
+  maximumRedeliveries: 5
+
+cxf:
+  path: /services
+
+# the options from org.apache.camel.spring.boot.CamelConfigurationProperties can be configured here
+camel:
+  sringboot:
+    name: ${APPLICATION_NAME}
+
+# WebService Configuration
+soap-ws:
+  basic-customer-profile:
+    endpoint: http://apldatintd001:5000/_/BasicCustomerAccounProfile
+

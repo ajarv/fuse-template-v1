@@ -1,0 +1,251 @@
+apiVersion: v1
+kind: Template
+labels:
+  template: fuse-starter-app
+metadata:
+  annotations:
+    description: Application template for Fuse Project with Camel integrations
+    iconClass: icon-tomcat
+    tags: java,spring
+    version: 1.0.0
+  name: fuse-starter-app
+objects:
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      annotations:
+        description: The web server's http port.
+      labels:
+        application: ${APPLICATION_NAME}
+      name: ${APPLICATION_NAME}
+      namespace: ${NAMESPACE}
+    spec:
+      ports:
+        - port: 18443
+          targetPort: 18443
+      selector:
+        deploymentConfig: ${APPLICATION_NAME}
+  - apiVersion: v1
+    id: ${APPLICATION_NAME}-http
+    kind: Route
+    metadata:
+      annotations:
+        description: Route for application's http service.
+      labels:
+        application: ${APPLICATION_NAME}
+      name: ${APPLICATION_NAME}
+      namespace: ${NAMESPACE}
+    spec:
+      host: ${HOSTNAME_HTTP}
+      tls:
+        termination: passthrough      
+      to:
+        name: ${APPLICATION_NAME}
+  - apiVersion: v1
+    kind: ImageStream
+    metadata:
+      labels:
+        application: ${APPLICATION_NAME}
+      name: ${APPLICATION_NAME}
+      namespace: ${NAMESPACE}
+  - apiVersion: v1
+    kind: DeploymentConfig
+    metadata:
+      labels:
+        application: ${APPLICATION_NAME}
+      name: ${APPLICATION_NAME}
+      namespace: ${NAMESPACE}
+    spec:
+      replicas: 1
+      selector:
+        deploymentConfig: ${APPLICATION_NAME}
+      strategy:
+        type: Recreate
+      template:
+        metadata:
+          labels:
+            application: ${APPLICATION_NAME}
+            deploymentConfig: ${APPLICATION_NAME}
+          name: ${APPLICATION_NAME}
+        spec:
+          serviceAccountName: "fuseappsa"
+          # Init containers help to setup the POD environment for the long running containers. e.g. setup tasks are db setup / keystore setup etc.
+          # This init containers section is just a place holder serves no useful purpose for demo app
+          initContainers:
+            - name: init-task
+              image: registry.access.redhat.com/redhat-sso-7/sso72-openshift:1.2
+              env:
+                - name: APP_LIFE_STAGE
+                  value: ${APP_LIFE_STAGE}
+              command: ["/bin/bash"]
+              args:
+                [
+                  "-c",
+                  "echo Application lifecycle stage: ${APP_LIFE_STAGE} &&  echo config folder: /var/run/app-config &&  ls -al /var/run/app-config"
+                ]
+              volumeMounts:
+                - mountPath: /var/run/app-config
+                  name: app-config
+          containers:
+            - name: spring-app
+              env:
+                - name: APP_IDENTITYSTORE_PASSWORD
+                  value: password
+                - name: APP_IDENTITYSTORE_PATH
+                  value: /var/run/secrets/java.io/keystores/identity.jks
+                - name: APP_TRUSTSTORE_PASSWORD
+                  value: password
+                - name: APP_TRUSTSTORE_PATH
+                  value: /var/run/secrets/java.io/keystores/trust.jks
+                - name: APPLICATION_NAME
+                  value: ${APPLICATION_NAME}
+              image: ${APPLICATION_NAME}
+              imagePullPolicy: Always
+              ports:
+                - containerPort: 8778
+                  name: jolokia
+                  protocol: TCP
+                - containerPort: 8080
+                  name: http
+                  protocol: TCP
+              readinessProbe:
+                exec:
+                  command:
+                    - /bin/bash
+                    - -c
+                    - curl -s 'http://localhost:8080${READINESS_PATH}'
+                      |grep -iq '${READINESS_RESPONSE}'
+                initialDelaySeconds: 30
+                timeoutSeconds: 3
+              livenessProbe:
+                exec:
+                  command:
+                    - /bin/bash
+                    - -c
+                    - curl -s 'http://localhost:8080${LIVENESS_PATH}'
+                      |grep -iq '${LIVENESS_RESPONSE}'
+                initialDelaySeconds: 30
+                timeoutSeconds: 3
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 256Mi
+                limits:
+                  cpu: 2000m
+                  memory: 512Mi
+              volumeMounts:
+                - mountPath: /var/run/app-config
+                  name: app-config
+            - name: sidecar-app
+              image: ${SIDE_CAR_IMAGE}
+              imagePullPolicy: Always
+              ports:
+              - containerPort: 18443
+                protocol: TCP
+              - containerPort: 18080
+                protocol: TCP
+              resources: {}
+              volumeMounts:
+                - mountPath: /var/run/app-config
+                  name: app-config
+          terminationGracePeriodSeconds: 60
+          volumes:
+            - name: app-config
+              configMap:
+                name: app-config
+      triggers:
+        - imageChangeParams:
+            automatic: true
+            containerNames:
+              - spring-app
+            from:
+              kind: ImageStreamTag
+              name: ${APPLICATION_NAME}:latest
+          type: ImageChange
+        - imageChangeParams:
+            automatic: true
+            containerNames:
+              - sidecar-app
+            from:
+              kind: ImageStreamTag
+              name: ${SIDE_CAR_IMAGE}
+          type: ImageChange
+  - apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: fuseappsa
+  - apiVersion: v1
+    groupNames: null
+    kind: RoleBinding
+    metadata:
+      creationTimestamp: null
+      labels:
+        template: basic-tomcat-template
+      name: jenkins_admin
+      namespace: ${NAMESPACE}
+    roleRef:
+      name: admin
+    subjects:
+      - kind: ServiceAccount
+        name: ${SA_PIPLINE_NAME}
+        namespace: ${SA_PIPELINE_NAMESPACE}
+    userNames:
+      - system:serviceaccount:${SA_PIPELINE_NAMESPACE}:${SA_PIPELINE_NAME}
+  - apiVersion: v1
+    groupNames: null
+    kind: RoleBinding
+    metadata:
+      creationTimestamp: null
+      name: fuseapp_view
+      namespace: ${NAMESPACE}
+    roleRef:
+      name: view
+    subjects:
+      - kind: ServiceAccount
+        name: fuseappsa
+        namespace: ${SA_NAMESPACE}
+    userNames:
+      - system:serviceaccount:${NAMESPACE}:fuseappsa
+parameters:
+  - description: The name for the application.
+    name: APPLICATION_NAME
+    required: true
+    value: fuse-starter-app
+  - description: the lifecycle stage of the application deployment e.g dev,int,qa,qa1,prod.
+    name: APP_LIFE_STAGE
+    required: true
+    value: dev
+  - description: The namespace to deploy into
+    name: NAMESPACE
+    required: true
+  - description: Name of a service account that can deploy to this project
+    name: SA_PIPELINE_NAME
+    required: true
+    value: jenkins
+  - description: Namespace of service account that can deploy to this project
+    name: SA_PIPELINE_NAMESPACE
+    required: true
+  - description:
+      "Custom hostname for http service route.  Leave blank for default hostname,
+      e.g.: <application-name>-<project>.<default-domain-suffix>"
+    name: HOSTNAME_HTTP
+  - description: "URI to check for app health"
+    name: READINESS_PATH
+    required: true
+    value: "/health"
+  - description: "String value expected back from readiness check"
+    name: READINESS_RESPONSE
+    required: true
+    value: "status.:.UP"
+  - description: "URI to check for app health"
+    name: LIVENESS_PATH
+    required: true
+    value: "/health"
+  - description: "String value expected back from liveness check"
+    name: LIVENESS_RESPONSE
+    required: true
+    value: "status.:.UP"
+  - description: "Sidecar to use for securing inbound/outbound traffic"
+    name: SIDE_CAR_IMAGE
+    required: true
+    value: "nginx-sidecar:latest"

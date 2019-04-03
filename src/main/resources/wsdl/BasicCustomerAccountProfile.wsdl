@@ -1,0 +1,44 @@
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://ns.xyz.com/ws/CustomerManagement/CustomerAccountManagement/CustomerDataManagement/BasicCustomerAccountProfile" xmlns:emf="http://ns.xyz.com/im/BusinessTechnology/Common/EMFSchemaV2" xmlns:ns1="http://ns.xyz.com/im/BusinessTechnology/InformationArchitecture/EventLogV2" targetNamespace="http://ns.xyz.com/ws/CustomerManagement/CustomerAccountManagement/CustomerDataManagement/BasicCustomerAccountProfile">
+	<wsdl:types>
+		<xsd:schema targetNamespace="http://ns.xyz.com/ws/CustomerManagement/CustomerAccountManagement/CustomerDataManagement/BasicCustomerAccountProfile" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:p="http://ns.xyz.com/im/CustomerManagement/CustomerAccountManagement/CustomerDataManagement/GetBasicCustomerAccountProfileInfoReqV1" xmlns:q="http://ns.xyz.com/im/CustomerManagement/CustomerAccountManagement/CustomerDataManagement/GetBasicCustomerAccountProfileInfoResV1">
+			<xsd:import namespace="http://ns.xyz.com/im/BusinessTechnology/Common/EMFSchemaV2" schemaLocation="http://ns.xyz.com/im/BusinessTechnology/InformationArchitecture/EMFSchemaV2.xsd"/>
+			<xsd:import namespace="http://ns.xyz.com/im/CustomerManagement/CustomerAccountManagement/CustomerDataManagement/GetBasicCustomerAccountProfileInfoReqV1" schemaLocation="http://ns.xyz.com/im/CustomerManagement/CustomerAccountManagement/CustomerDataManagement/GetBasiCustomerAccountProfileRequest.xsd"/>
+			<xsd:import namespace="http://ns.xyz.com/im/CustomerManagement/CustomerAccountManagement/CustomerDataManagement/GetBasicCustomerAccountProfileInfoResV1" schemaLocation="http://ns.xyz.com/im/CustomerManagement/CustomerAccountManagement/CustomerDataManagement/GetBasiCustomerAccountProfileResponse.xsd"/>
+			<xsd:element name="getBasicCustomerAccountProfileRequestMessage" type="p:GetBasicCustomerAccountProfileReq"/>
+			<xsd:element name="getBasicCustomerAccountProfileResponseMessage" type="q:GetBasicCustomerAccountProfileRes"/>
+		</xsd:schema>
+	</wsdl:types>
+	<wsdl:message name="GetBasicCustomerAccountProfileRequest">
+		<wsdl:part name="parameter" element="tns:getBasicCustomerAccountProfileRequestMessage"/>
+		<wsdl:part name="header" element="emf:EMFHeader"/>
+	</wsdl:message>
+	<wsdl:message name="GetBasicCustomerAccountProfileResponse">
+		<wsdl:part name="parameter" element="tns:getBasicCustomerAccountProfileResponseMessage"/>
+		<wsdl:part name="header" element="emf:EMFHeader"/>
+	</wsdl:message>
+	<wsdl:portType name="BasicCustomerAccountProfilePortType">
+		<wsdl:operation name="getBasicCustomerAccountProfileDetails">
+			<wsdl:input message="tns:GetBasicCustomerAccountProfileRequest"/>
+			<wsdl:output message="tns:GetBasicCustomerAccountProfileResponse"/>
+		</wsdl:operation>
+	</wsdl:portType>
+	<wsdl:binding name="BasicCustomerAccounProfileServiceBinding" type="tns:BasicCustomerAccountProfilePortType">
+		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+		<wsdl:operation name="getBasicCustomerAccountProfileDetails">
+			<soap:operation soapAction="http://ns.xyz.com/ws/CustomerManagement/CustomerAccountManagement/CustomerDataManagement/BasicCustomerAccountProfile"/>
+			<wsdl:input>
+				<soap:header message="tns:GetBasicCustomerAccountProfileRequest" part="header" use="literal"/>
+				<soap:body parts="parameter" use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:header message="tns:GetBasicCustomerAccountProfileResponse" part="header" use="literal"/>
+				<soap:body parts="parameter" use="literal"/>
+			</wsdl:output>
+		</wsdl:operation>
+	</wsdl:binding>
+	<wsdl:service name="BasicCustomerAccounProfile">
+		<wsdl:port name="BasicCustomerAccounProfileServicePort" binding="tns:BasicCustomerAccounProfileServiceBinding">
+			<soap:address location="http://server:port/endpoint"/>
+		</wsdl:port>
+	</wsdl:service>
+</wsdl:definitions>

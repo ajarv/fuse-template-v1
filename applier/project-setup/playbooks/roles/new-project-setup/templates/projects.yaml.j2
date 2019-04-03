@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: List
+items:
+  - kind: ProjectRequest
+    apiVersion: v1
+    metadata:
+      name: {{project_name}}-build
+    displayName: {{project_display_name}} - Build
+  - kind: ProjectRequest
+    apiVersion: v1
+    metadata:
+      name: {{project_name}}-dev
+    displayName: {{project_display_name}} - Dev
+  - kind: ProjectRequest
+    apiVersion: v1
+    metadata:
+      name: {{project_name}}-int
+    displayName: {{project_display_name}} - Int
+  - kind: ProjectRequest
+    apiVersion: v1
+    metadata:
+      name: {{project_name}}-qa
+    displayName: {{project_display_name}} - QA

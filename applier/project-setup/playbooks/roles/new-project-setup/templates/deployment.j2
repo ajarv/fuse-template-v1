@@ -1,0 +1,6 @@
+APPLICATION_NAME={{project_name}}
+APP_LIFE_STAGE={{lifecycle_env}}
+NAMESPACE={{project_name}}-{{lifecycle_env}}
+SA_PIPELINE_NAMESPACE={{project_name}}-build
+HOSTNAME_HTTP={{project_name}}.{{sidecar_app_id}}-{{lifecycle_env}}.{{router_dns_suffix}}
+SIDE_CAR_IMAGE=nginx-sidecar-{{sidecar_app_id}}{{lifecycle_env_suffix}}:1.0

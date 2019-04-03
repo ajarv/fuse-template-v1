@@ -1,0 +1,22 @@
+openshift_cluster_content:
+  - object: projects
+    content:
+      - name: "create environments"
+        file: "{{ inventory_dir }}/../../openshift/projects/projects.yml"
+        action: create
+  - object: deployments
+    content:
+      - name: "deploy dev environment"
+        template: "{{ inventory_dir }}/../../openshift/templates/deployment.yml"
+        params: "{{ inventory_dir }}/../../openshift/params/deployment-dev"
+      - name: "deploy int environment"
+        template: "{{ inventory_dir }}/../../openshift/templates/deployment.yml"
+        params: "{{ inventory_dir }}/../../openshift/params/deployment-int"
+      - name: "deploy QA environment"
+        template: "{{ inventory_dir }}/../../openshift/templates/deployment.yml"
+        params: "{{ inventory_dir }}/../../openshift/params/deployment-qa"
+  - object: builds
+    content:
+      - name: "deploy build pipeline to dev"
+        template: "{{ inventory_dir }}/../../openshift/templates/build.yml"
+        params: "{{ inventory_dir }}/../../openshift/params/build-dev"

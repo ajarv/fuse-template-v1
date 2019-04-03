@@ -1,0 +1,8 @@
+openshift_cluster_content:
+- object: deployments
+  content:
+  - name: "deploy {{ env_name }} environment"
+    template: "{{ inventory_dir }}/../../openshift/templates/deployment.yml"
+    params: "{{ inventory_dir }}/../../openshift/params/deployment-{{ env_name }}"
+  - name: "deploy fuse70-console"
+    template: "{{ inventory_dir }}/../../openshift/templates/fuse70-console.yml"

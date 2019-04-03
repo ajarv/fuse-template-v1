@@ -1,0 +1,5 @@
+APPLICATION_NAME=sample-app
+NAMESPACE=sample-app-dev
+SA_PIPELINE_NAMESPACE=sample-app-build
+HOSTNAME_HTTP=sample-app.ccsi-dev.10.29.203.12.nip.io
+SIDE_CAR_IMAGE=nginx-sidecar-ccsid:1.0

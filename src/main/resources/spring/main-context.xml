@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:cxf="http://camel.apache.org/schema/cxf"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="             http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd             http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd             http://camel.apache.org/schema/cxf http://camel.apache.org/schema/cxf/camel-cxf.xsd">
+
+	<bean id="redeliveryPolicy"
+		class="org.apache.activemq.RedeliveryPolicy">
+		<property name="maximumRedeliveries"
+			value="${amq.maximumRedeliveries}" />
+		<property name="redeliveryDelay"
+			value="${amq.redeliveryDelay}" />
+	</bean>
+
+	<bean id="amqConnectionFactory"
+		class="org.apache.activemq.pool.PooledConnectionFactory"
+		init-method="start" destroy-method="stop">
+		<property name="connectionFactory">
+			<bean class="org.apache.activemq.ActiveMQConnectionFactory">
+				<property name="brokerURL" value="${amq.brokerurl}" />
+				<property name="userName" value="${amq.username}" />
+				<property name="password" value="${amq.password}" />
+				<property name="redeliveryPolicy" ref="redeliveryPolicy" />
+			</bean>
+		</property>
+	</bean>
+	<bean
+		class="org.apache.activemq.camel.component.ActiveMQComponent" id="amq">
+		<property name="connectionFactory" ref="amqConnectionFactory" />
+	</bean>
+
+</beans>

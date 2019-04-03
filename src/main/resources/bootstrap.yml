@@ -1,0 +1,13 @@
+# Startup configuration of Spring-cloud-kubernetes
+spring:
+  application:
+    name: fuse-starter-app
+  cloud:
+    kubernetes:
+      config:
+        name: app-config
+      reload:
+        # Enable live reload on ConfigMap change (disabled for Secrets by default)
+        enabled: true
+      secrets:
+        enabled: false
